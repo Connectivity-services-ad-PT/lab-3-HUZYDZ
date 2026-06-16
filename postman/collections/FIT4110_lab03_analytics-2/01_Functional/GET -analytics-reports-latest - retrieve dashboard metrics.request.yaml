@@ -1,0 +1,18 @@
+$kind: http-request
+name: GET /analytics/reports/latest - retrieve dashboard metrics
+url: "{{baseUrl}}/api/v1/reports/daily"
+method: GET
+headers:
+  Authorization: Bearer {{authToken}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP Status Code phai la 200 hoac 201", function () {
+          pm.expect([200, 201]).to.include(pm.response.code);
+      });
+      pm.test("Response body phai tra ve dung dinh dang JSON", function () {
+          pm.response.to.be.withBody;
+          pm.response.to.be.json;
+      });
+    language: text/javascript
+order: 2000

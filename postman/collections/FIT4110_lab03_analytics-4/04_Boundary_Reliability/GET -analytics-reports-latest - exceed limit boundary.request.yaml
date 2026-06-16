@@ -1,0 +1,13 @@
+$kind: http-request
+name: GET /analytics/reports/latest - exceed limit boundary
+url: "{{baseUrl}}/analytics/reports/latest?limit=1000"
+method: GET
+queryParams:
+  limit: "1000"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Limit qua 50 phai bi chan loi validation 400", function () {
+          pm.expect(pm.response.code).to.equal(400);
+      });
+order: 1000

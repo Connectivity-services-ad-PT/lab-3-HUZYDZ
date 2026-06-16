@@ -1,0 +1,17 @@
+$kind: http-request
+name: 'GET /dashboard/realtime - response time threshold'
+method: GET
+url: '{{baseUrl}}/api/v1/dashboard/realtime'
+headers:
+  - key: Authorization
+    value: 'Bearer {{authToken}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      if (pm.environment.get("env") === "local") {
+          pm.test("Thoi gian phan hoi cua service that phai duoi 1000ms", function () {
+              pm.expect(pm.response.responseTime).to.be.below(1000);
+          });
+      }
+order: 1000

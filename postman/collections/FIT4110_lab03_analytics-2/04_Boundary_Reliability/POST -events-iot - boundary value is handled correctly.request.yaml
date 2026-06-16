@@ -1,0 +1,24 @@
+$kind: http-request
+name: POST /events/iot - boundary value is handled correctly
+url: "{{baseUrl}}/api/v1/events/iot"
+method: POST
+headers:
+  Authorization: Bearer {{authToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "deviceId": "SENSOR-01",
+      "eventType": "motion_detected",
+      "value": 9999999,
+      "timestamp": "2026-01-01T00:00:00Z"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Gia tri bien duoc xu ly dung quy tac nghiep vu", function () {
+          pm.expect([201, 400, 422]).to.include(pm.response.code);
+      });
+    language: text/javascript
+order: 1000

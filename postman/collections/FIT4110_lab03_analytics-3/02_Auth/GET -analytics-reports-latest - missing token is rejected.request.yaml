@@ -1,0 +1,13 @@
+$kind: http-request
+name: GET /analytics/reports/latest - missing token is rejected
+url: "{{baseUrl}}/analytics/reports/latest"
+method: GET
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Request thieu token phai bi tu choi 401", function () {
+          pm.expect(pm.response.code).to.equal(401);
+      });
+order: 1000

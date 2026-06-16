@@ -1,5 +1,9 @@
 # Reliability Checklist — FIT4110 Lab 03
 
+**Sinh viên:** Trần Đoàn Quang Huy  
+**Mã sinh viên:** 1771020359  
+**Nhóm:** Analytics (B5) — `team-analytics`
+
 Điền checklist này trước khi nộp Lab 03.
 
 ## 1. Functional tests

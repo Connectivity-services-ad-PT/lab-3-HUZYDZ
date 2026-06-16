@@ -1,0 +1,15 @@
+# Use this workspace to collaborate
+workspace:
+  id: e0fe8153-bf08-4526-874d-23f839f798ae
+
+localResources:
+  specs:
+    - ..\contracts\analytics.openapi.yaml
+    - ..\contracts\ai-vision.openapi.yaml
+    - ..\contracts\iot-ingestion.openapi.yaml
+
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+
+cloudResources:
+  collections:
+    ..\postman\collections\FIT4110_lab03_analytics: fit4110-lab03-analytics-collection

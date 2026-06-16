@@ -1,0 +1,8 @@
+$kind: collection
+name: FIT4110_lab03_analytics
+auth:
+  - id: 655f071f-46ab-44b1-a103-630ffce47f37
+    type: bearer
+    name: bearer auth
+    credentials:
+      token: "{{authToken}}"

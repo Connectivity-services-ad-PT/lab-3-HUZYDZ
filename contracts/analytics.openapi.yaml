@@ -1,0 +1,457 @@
+openapi: 3.1.0
+info:
+  title: "Smart Campus — Lab 02 Analytics Contract"
+  version: "1.0.0"
+  description: "Hợp đồng API của hệ thống Analytics (Nhóm B5)."
+  contact:
+    name: "Trần Đoàn Quang Huy"
+    email: "fit4110@example.edu.vn"
+servers:
+  - url: "http://localhost:4010"
+    description: "Prism mock server"
+tags:
+  - name: "health"
+    description: "Kiểm tra trạng thái service"
+  - name: "rules"
+    description: "Quản lý cấu hình tổng hợp số liệu"
+  - name: "reports"
+    description: "Truy xuất dữ liệu báo cáo Dashboard"
+security:
+  - bearerAuth: []
+
+paths:
+  /health:
+    get:
+      operationId: "getHealth"
+      summary: "Kiểm tra trạng thái service"
+      description: "Endpoint kiểm tra Analytics service."
+      tags: 
+        - "health"
+      security: []
+      responses:
+        "200":
+          description: "Service đang hoạt động"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+              examples:
+                ok:
+                  value:
+                    status: "ok"
+                    service: "analytics-service"
+                    time: "2026-05-28T08:00:00Z"
+
+  /analytics/rules:
+    post:
+      operationId: "createMetricRule"
+      summary: "Tạo cấu hình tổng hợp mới"
+      description: "Nhận cấu hình rule mới."
+      tags: 
+        - "rules"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRuleRequest"
+            examples:
+              zoneRule:
+                value:
+                  ruleName: "Tổng hợp nhiệt độ"
+                  aggregateWindow: "hourly"
+                  description: "Tính trung bình nhiệt độ"
+                  targetConfig:
+                    targetType: "ZONE_TARGET"
+                    zoneId: "ZONE-T1"
+      responses:
+        "201":
+          description: "Rule đã được tạo thành công"
+          headers:
+            Location:
+              description: "URI của rule vừa tạo."
+              schema:
+                type: "string"
+                format: "uri"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MetricRule"
+              examples:
+                created:
+                  value:
+                    id: "123e4567-e89b-12d3-a456-426614174000"
+                    ruleName: "Tổng hợp nhiệt độ"
+                    aggregateWindow: "hourly"
+                    description: "Tính trung bình nhiệt độ"
+                    targetConfig:
+                      targetType: "ZONE_TARGET"
+                      zoneId: "ZONE-T1"
+                    status: "active"
+                    createdAt: "2026-05-28T08:00:00Z"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /analytics/rules/{ruleId}:
+    get:
+      operationId: "getRuleById"
+      summary: "Lấy chi tiết cấu hình"
+      description: "Lấy rule tổng hợp theo ID."
+      tags: 
+        - "rules"
+      parameters:
+        - $ref: "#/components/parameters/RuleId"
+      responses:
+        "200":
+          description: "Chi tiết cấu hình Rule"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MetricRule"
+              examples:
+                success:
+                  value:
+                    id: "123e4567-e89b-12d3-a456-426614174000"
+                    ruleName: "Tổng hợp nhiệt độ"
+                    aggregateWindow: "hourly"
+                    description: "Tính trung bình nhiệt độ"
+                    targetConfig:
+                      targetType: "ZONE_TARGET"
+                      zoneId: "ZONE-T1"
+                    status: "active"
+                    createdAt: "2026-05-28T08:00:00Z"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+          
+    delete:
+      operationId: "deleteRule"
+      summary: "Xóa cấu hình"
+      description: "Xóa mềm cấu hình."
+      tags: 
+        - "rules"
+      parameters:
+        - $ref: "#/components/parameters/RuleId"
+      responses:
+        "204":
+          description: "Xóa thành công"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /analytics/reports/latest:
+    get:
+      operationId: "getLatestReports"
+      summary: "Lấy báo cáo mới nhất"
+      description: "Lấy các số liệu tổng hợp mới nhất."
+      tags: 
+        - "reports"
+      parameters:
+        - name: "limit"
+          in: "query"
+          required: false
+          description: "Số báo cáo tối đa."
+          schema:
+            type: "integer"
+            minimum: 1
+            maximum: 50
+            default: 10
+      responses:
+        "200":
+          description: "Danh sách báo cáo"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                additionalProperties: false
+                required: 
+                  - "items"
+                properties:
+                  items:
+                    type: "array"
+                    minItems: 0
+                    items:
+                      $ref: "#/components/schemas/AnalyticsReport"
+              examples:
+                latest:
+                  value:
+                    items:
+                      - reportId: "550e8400-e29b-41d4-a716-446655440000"
+                        generatedAt: "2026-05-28T08:00:00Z"
+                        exportUrl: null
+                        summaryData:
+                          avgTemperature: 28.5
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: "http"
+      scheme: "bearer"
+      bearerFormat: "JWT"
+
+  parameters:
+    RuleId:
+      name: "ruleId"
+      in: "path"
+      required: true
+      description: "ID dạng UUID của cấu hình rule."
+      schema:
+        type: "string"
+        format: "uuid"
+
+  schemas:
+    HealthStatus:
+      type: "object"
+      additionalProperties: false
+      required: 
+        - "status"
+        - "service"
+        - "time"
+      properties:
+        status:
+          type: "string"
+          enum: 
+            - "ok"
+        service:
+          type: "string"
+          minLength: 2
+          maxLength: 80
+        time:
+          type: "string"
+          format: "date-time"
+
+    CreateRuleRequest:
+      type: "object"
+      additionalProperties: false
+      required: 
+        - "ruleName"
+        - "aggregateWindow"
+        - "targetConfig"
+      properties:
+        ruleName:
+          type: "string"
+          minLength: 5
+          maxLength: 100
+        aggregateWindow:
+          type: "string"
+          enum: 
+            - "hourly"
+            - "daily"
+        description:
+          type: ["string", "null"]
+          maxLength: 255
+        targetConfig:
+          $ref: "#/components/schemas/TargetConfig"
+
+    MetricRule:
+      allOf:
+        - $ref: "#/components/schemas/CreateRuleRequest"
+        - type: "object"
+          additionalProperties: false
+          required: 
+            - "id"
+            - "status"
+            - "createdAt"
+          properties:
+            id:
+              type: "string"
+              format: "uuid"
+            status:
+              type: "string"
+              enum: 
+                - "active"
+                - "inactive"
+            createdAt:
+              type: "string"
+              format: "date-time"
+
+    TargetConfig:
+      oneOf:
+        - $ref: "#/components/schemas/DeviceTarget"
+        - $ref: "#/components/schemas/ZoneTarget"
+      discriminator:
+        propertyName: "targetType"
+        mapping:
+          DEVICE_TARGET: "#/components/schemas/DeviceTarget"
+          ZONE_TARGET: "#/components/schemas/ZoneTarget"
+
+    DeviceTarget:
+      type: "object"
+      additionalProperties: false
+      required: 
+        - "targetType"
+        - "deviceId"
+      properties:
+        targetType:
+          type: "string"
+          enum: 
+            - "DEVICE_TARGET"
+        deviceId:
+          type: "string"
+          pattern: "^SENSOR-[0-9]{3}$"
+
+    ZoneTarget:
+      type: "object"
+      additionalProperties: false
+      required: 
+        - "targetType"
+        - "zoneId"
+      properties:
+        targetType:
+          type: "string"
+          enum: 
+            - "ZONE_TARGET"
+        zoneId:
+          type: "string"
+          pattern: "^ZONE-[A-Z0-9]{2,}$"
+
+    AnalyticsReport:
+      type: "object"
+      additionalProperties: false
+      required: 
+        - "reportId"
+        - "generatedAt"
+        - "summaryData"
+      properties:
+        reportId:
+          type: "string"
+          format: "uuid"
+        generatedAt:
+          type: "string"
+          format: "date-time"
+        exportUrl:
+          type: ["string", "null"]
+          format: "uri"
+        summaryData:
+          type: "object"
+          additionalProperties: true
+
+    Problem:
+      type: "object"
+      additionalProperties: false
+      required: 
+        - "type"
+        - "title"
+        - "status"
+      properties:
+        type:
+          type: "string"
+          format: "uri"
+        title:
+          type: "string"
+          minLength: 3
+          maxLength: 120
+        status:
+          type: "integer"
+          minimum: 400
+          maximum: 599
+        detail:
+          type: ["string", "null"]
+          maxLength: 500
+        instance:
+          type: ["string", "null"]
+          format: "uri"
+        errors:
+          type: "array"
+          minItems: 0
+          items:
+            type: "object"
+            additionalProperties: false
+            required: 
+              - "field"
+              - "code"
+              - "message"
+            properties:
+              field:
+                type: "string"
+              code:
+                type: "string"
+              message:
+                type: "string"
+
+  responses:
+    BadRequest:
+      description: "Dữ liệu sai định dạng"
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          examples:
+            err400:
+              value:
+                type: "https://api.smartcampus.edu.vn/errors/bad-request"
+                title: "Invalid Payload"
+                status: 400
+                detail: "Thiếu trường dữ liệu."
+                
+    Unauthorized:
+      description: "Thiếu token"
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          examples:
+            err401:
+              value:
+                type: "https://api.smartcampus.edu.vn/errors/unauthorized"
+                title: "Unauthorized"
+                status: 401
+                detail: "Token không tồn tại."
+                
+    NotFound:
+      description: "Không tìm thấy"
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          examples:
+            err404:
+              value:
+                type: "https://api.smartcampus.edu.vn/errors/not-found"
+                title: "Not Found"
+                status: 404
+                detail: "Không tồn tại ID."
+                
+    UnprocessableEntity:
+      description: "Sai logic"
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          examples:
+            err422:
+              value:
+                type: "https://api.smartcampus.edu.vn/errors/unprocessable-entity"
+                title: "Unprocessable Entity"
+                status: 422
+                detail: "Sai nghiệp vụ."
+                
+    InternalServerError:
+      description: "Lỗi máy chủ"
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          examples:
+            err500:
+              value:
+                type: "https://api.smartcampus.edu.vn/errors/internal-server-error"
+                title: "Internal Server Error"
+                status: 500
+                detail: "Lỗi DB."

@@ -1,0 +1,11 @@
+$kind: http-request
+name: POST /readings - IoT dependency smoke test
+url: "{{iotIngestionMockUrl}}/readings"
+method: POST
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Dich vu IoT phu thuoc phan hoi khong bi crash", function () {
+          pm.expect([200, 201, 202, 400, 401, 422]).to.include(pm.response.code);
+      });
+order: 1000

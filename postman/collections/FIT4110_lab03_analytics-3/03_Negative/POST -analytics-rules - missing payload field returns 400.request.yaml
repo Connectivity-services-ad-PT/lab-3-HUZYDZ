@@ -1,0 +1,24 @@
+$kind: http-request
+name: POST /analytics/rules - missing payload field returns 400
+url: "{{baseUrl}}/analytics/rules"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "ruleName": "Tong hop thieu field"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Thieu truong bat buoc phai tra ve loi 400", function () {
+          pm.expect(pm.response.code).to.equal(400);
+      });
+      pm.test("Response tuan thu ProblemDetails", function () {
+          const json = pm.response.json();
+          pm.expect(json).to.have.property("type");
+          pm.expect(json).to.have.property("status");
+      });
+order: 1000

@@ -1,6 +1,8 @@
 ID,Folder,Endpoint,Method,Scenario,Input file/body,Expected status,Expected response check,Type,Pass/Fail,Evidence
-TC01,Functional,/health,GET,Service is alive,-,200,status=ok,functional,,
-TC02,Functional,/readings,POST,Create reading happy path,mock-data/sensor-reading-valid.json,201,"has reading_id, accepted=true",functional,,
-TC03,Negative,/readings,POST,Missing device_id,mock-data/sensor-reading-invalid-missing-device.json,400,Problem Details,negative,,
-TC04,Auth,/readings,POST,Missing token,mock-data/sensor-reading-valid.json,401,Problem Details,auth,,
-TC05,Boundary,/readings,POST,High temperature boundary,mock-data/sensor-reading-boundary.json,201/400,documented behavior,boundary,,
+TC01,Functional,/analytics/rules,POST,Create aggregation config,zone target rule,201,MetricRule created,functional,,
+TC02,Functional,/analytics/reports/latest,GET,Retrieve dashboard metrics,-,200,items array,functional,,
+TC03,Auth,/analytics/reports/latest,GET,Missing token,-,401,ProblemDetails,auth,,
+TC04,Negative,/analytics/rules,POST,Missing payload field,-,400,ProblemDetails,negative,,
+TC05,Boundary,/analytics/reports/latest,GET,Exceed limit boundary,limit=1000,400,validation error,boundary,,
+TC06,Consumer_side_Smoke,/readings,POST,IoT dependency smoke test,-,200/201/202/400/401/422,no crash,consumer,,
+TC07,Local_only_NonFunctional,/health,GET,Response time threshold,-,200,responseTime < 1000ms (local),reliability,,

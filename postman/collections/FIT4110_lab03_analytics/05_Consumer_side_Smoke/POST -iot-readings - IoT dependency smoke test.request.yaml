@@ -1,0 +1,26 @@
+$kind: http-request
+name: 'POST /readings - IoT dependency smoke test'
+method: POST
+url: '{{iotIngestionMockUrl}}/readings'
+headers:
+  - key: Authorization
+    value: 'Bearer {{authToken}}'
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "deviceId": "SENSOR-01",
+      "value": 25.4,
+      "unit": "celsius",
+      "timestamp": "2026-01-01T00:00:00Z"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Dich vu IoT phu thuoc phai hoat dong va phan hoi hop le", function () {
+          pm.expect(pm.response.code).to.equal(200);
+      });
+order: 1000

@@ -1,0 +1,21 @@
+$kind: http-request
+name: GET /analytics/traffic - missing time range returns 400
+url: "{{baseUrl}}/api/v1/analytics/traffic"
+method: GET
+headers:
+  Authorization: Bearer {{authToken}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Thieu tham so bat buoc phai tra ve loi Client 400/422", function () {
+          pm.expect([400, 422]).to.include(pm.response.code);
+      });
+      pm.test("Response loi phai tuan thu cau truc ProblemDetails", function () {
+          const json = pm.response.json();
+          pm.expect(json).to.have.property("type");
+          pm.expect(json).to.have.property("title");
+          pm.expect(json).to.have.property("status");
+          pm.expect(json.status).to.be.within(400, 599);
+      });
+    language: text/javascript
+order: 1000

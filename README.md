@@ -3,6 +3,9 @@
 **Học phần:** FIT4110 – Dịch vụ kết nối và Công nghệ nền tảng  
 **Buổi 3:** Kiểm thử tích hợp với Postman + Mock Server  
 **Case study:** Smart Campus Operations Platform  
+**Sinh viên:** Trần Đoàn Quang Huy  
+**Mã sinh viên:** 1771020359  
+**Nhóm:** Analytics (B5) — `team-analytics`
 
 ## Nội dung chính
 
@@ -70,11 +73,11 @@ FIT4110_lab03_postman_mock_testing/
 ├── package.json
 ├── Makefile
 ├── contracts/
-│   ├── iot-ingestion.openapi.yaml
+│   ├── analytics.openapi.yaml
 │   └── ai-vision.openapi.yaml
 ├── postman/
 │   ├── collections/
-│   │   └── FIT4110_lab03_iot_ingestion.postman_collection.json
+│   │   └── FIT4110_lab03_analytics.postman_collection.json
 │   └── environments/
 │       ├── FIT4110_lab03_mock.postman_environment.json
 │       └── FIT4110_lab03_local.postman_environment.json
@@ -146,13 +149,14 @@ Tất cả các giá trị này phải đặt trong Postman Environment.
 | `env` | `mock` | `local` | Môi trường đang chạy test |
 | `baseUrl` | `http://localhost:4010` | `http://localhost:8000` | URL service chính |
 | `authToken` | `lab-token` | `local-dev-token` | Token hoặc API key |
-| `teamName` | `team-iot` | `team-iot` | Tên nhóm hoặc tên service |
+| `teamName` | `team-analytics` | `team-analytics` | Tên nhóm hoặc tên service |
+| `iotIngestionMockUrl` | `http://localhost:4012` | `http://localhost:4012` | URL mock IoT (service phụ thuộc) |
 | `aiVisionMockUrl` | `http://localhost:4011` | `http://localhost:4011` | URL mock của service phụ thuộc |
 
 Ví dụ URL trong Postman:
 
 ```text
-{{baseUrl}}/readings
+{{baseUrl}}/analytics/reports/latest
 ```
 
 Ví dụ Authorization header:
@@ -165,16 +169,16 @@ Authorization: Bearer {{authToken}}
 
 ## 6. Chạy Mock Server
 
-Contract mẫu của IoT Ingestion nằm tại:
+Contract của nhóm Analytics nằm tại:
 
 ```text
-contracts/iot-ingestion.openapi.yaml
+contracts/analytics.openapi.yaml
 ```
 
-Chạy mock IoT:
+Chạy mock Analytics:
 
 ```bash
-npm run mock:iot
+npm run mock:analytics
 ```
 
 Mock server mặc định chạy tại:
@@ -189,7 +193,19 @@ Kiểm tra mock server:
 curl http://localhost:4010/health
 ```
 
-Nếu cần chạy mock AI Vision cho consumer-side smoke test:
+Nếu cần chạy mock IoT Ingestion cho consumer-side smoke test:
+
+```bash
+npm run mock:iot
+```
+
+Mock IoT Ingestion chạy tại:
+
+```text
+http://localhost:4012
+```
+
+Nếu cần chạy mock AI Vision:
 
 ```bash
 npm run mock:vision
@@ -258,7 +274,7 @@ reports/
 Ví dụ chạy Newman trực tiếp:
 
 ```bash
-npx newman run postman/collections/FIT4110_lab03_iot_ingestion.postman_collection.json \
+npx newman run postman/collections/FIT4110_lab03_analytics.postman_collection.json \
   -e postman/environments/FIT4110_lab03_mock.postman_environment.json \
   -r cli,junit,htmlextra \
   --reporter-junit-export reports/newman-report.xml \
@@ -375,10 +391,10 @@ pm.test("High temperature is accepted with warning or rejected as invalid", func
 
 Consumer-side smoke test dùng để kiểm tra một service có thể gọi được contract tối thiểu của service phụ thuộc.
 
-Ví dụ IoT cần gọi mock của AI Vision:
+Ví dụ Analytics cần gọi mock của IoT Ingestion:
 
 ```text
-POST {{aiVisionMockUrl}}/detect
+POST {{iotIngestionMockUrl}}/readings
 ```
 
 Consumer-side test không nên chỉ gọi lại API của chính service mình.
@@ -494,7 +510,7 @@ Các file trong `mock-data/` nên được dùng cho test, không chỉ để th
 Ví dụ chạy Newman với data file:
 
 ```bash
-npx newman run postman/collections/FIT4110_lab03_iot_ingestion.postman_collection.json \
+npx newman run postman/collections/FIT4110_lab03_analytics.postman_collection.json \
   -e postman/environments/FIT4110_lab03_mock.postman_environment.json \
   --iteration-data mock-data/sensor-reading-valid.json
 ```
@@ -542,7 +558,7 @@ jobs:
         run: npx @stoplight/spectral-cli lint contracts/*.yaml
 
       - name: Start Prism mock server
-        run: nohup npm run mock:iot > prism.log 2>&1 &
+        run: nohup npm run mock:analytics > prism.log 2>&1 &
 
       - name: Wait for mock server
         run: npx wait-on http://localhost:4010/health --timeout 30000
@@ -628,7 +644,7 @@ Một nhóm được xem là hoàn thành Lab 03 khi:
 
 | Lỗi | Nguyên nhân | Cách xử lý |
 |---|---|---|
-| `ECONNREFUSED` | Mock server chưa chạy | Chạy `npm run mock:iot` và kiểm tra `/health` |
+| `ECONNREFUSED` | Mock server chưa chạy | Chạy `npm run mock:analytics` và kiểm tra `/health` |
 | Newman chạy vào mock dù muốn test local | Environment local chưa được load hoặc collection còn hardcode `baseUrl` | Kiểm tra tham số `-e` và collection variables |
 | `401 Unauthorized` ở happy path | Thiếu hoặc sai `authToken` | Kiểm tra environment và Authorization header |
 | Auth test pass trên mock nhưng fail trên local | Mock không validate auth thật | Chạy lại với service thật và điều chỉnh test |

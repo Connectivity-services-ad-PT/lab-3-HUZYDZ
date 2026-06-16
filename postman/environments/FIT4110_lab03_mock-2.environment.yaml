@@ -1,0 +1,12 @@
+name: FIT4110_lab03_mock
+values:
+  - key: env
+    value: mock
+  - key: baseUrl
+    value: 'http://localhost:4010'
+  - key: authToken
+    value: lab-token
+  - key: teamName
+    value: team-analytics
+  - key: iotIngestionMockUrl
+    value: 'http://localhost:4012'

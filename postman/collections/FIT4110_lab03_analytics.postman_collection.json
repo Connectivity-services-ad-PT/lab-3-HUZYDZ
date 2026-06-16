@@ -1,0 +1,234 @@
+{
+  "info": {
+    "name": "FIT4110_lab03_analytics",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "01_Functional",
+      "item": [
+        {
+          "name": "POST /analytics/rules - create aggregation config",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"HTTP Status Code phai la 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ruleName\": \"Tong hop nhiet do\",\n  \"aggregateWindow\": \"hourly\",\n  \"targetConfig\": {\n    \"targetType\": \"ZONE_TARGET\",\n    \"zoneId\": \"ZONE-T1\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/analytics/rules",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "rules"]
+            }
+          }
+        },
+        {
+          "name": "GET /analytics/reports/latest - retrieve dashboard metrics",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"HTTP Status Code phai la 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/analytics/reports/latest",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "reports", "latest"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02_Auth",
+      "item": [
+        {
+          "name": "GET /analytics/reports/latest - missing token is rejected",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Request thieu token phai bi tu choi 401\", function () {",
+                  "    pm.expect(pm.response.code).to.equal(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/analytics/reports/latest",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "reports", "latest"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03_Negative",
+      "item": [
+        {
+          "name": "POST /analytics/rules - missing payload field returns 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Thieu truong bat buoc phai tra ve loi 422\", function () {",
+                  "    pm.expect(pm.response.code).to.equal(422);",
+                  "});",
+                  "pm.test(\"Response tuan thu ProblemDetails\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property(\"type\");",
+                  "    pm.expect(json).to.have.property(\"status\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ruleName\": \"Tong hop thieu field\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/analytics/rules",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "rules"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04_Boundary_Reliability",
+      "item": [
+        {
+          "name": "GET /analytics/reports/latest - exceed limit boundary",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Limit qua 50 phai bi chan loi validation 422\", function () {",
+                  "    pm.expect(pm.response.code).to.equal(422);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/analytics/reports/latest?limit=1000",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "reports", "latest"],
+              "query": [
+                { "key": "limit", "value": "1000" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05_Consumer_side_Smoke",
+      "item": [
+        {
+          "name": "POST /readings - IoT dependency smoke test",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Dich vu IoT phu thuoc phan hoi khong bi crash\", function () {",
+                  "    pm.expect([200, 201, 202, 400, 401, 422]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{iotIngestionMockUrl}}/readings",
+              "host": ["{{iotIngestionMockUrl}}"],
+              "path": ["readings"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06_Local_only_NonFunctional",
+      "item": [
+        {
+          "name": "GET /health - response time threshold",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.environment.get(\"env\") === \"local\") {",
+                  "    pm.test(\"Latency tren local duoi 1000ms\", function () {",
+                  "        pm.expect(pm.response.responseTime).to.be.below(1000);",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

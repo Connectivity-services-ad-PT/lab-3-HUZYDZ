@@ -1,0 +1,12 @@
+name: FIT4110_lab03_local
+values:
+  - key: env
+    value: local
+  - key: baseUrl
+    value: 'http://localhost:8000'
+  - key: authToken
+    value: local-dev-token
+  - key: teamName
+    value: team-analytics
+  - key: iotIngestionMockUrl
+    value: 'http://localhost:4012'

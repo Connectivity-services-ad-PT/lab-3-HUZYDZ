@@ -1,0 +1,24 @@
+$kind: http-request
+name: POST /analytics/rules - create aggregation config
+url: "{{baseUrl}}/analytics/rules"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "ruleName": "Tong hop nhiet do",
+      "aggregateWindow": "hourly",
+      "targetConfig": {
+        "targetType": "ZONE_TARGET",
+        "zoneId": "ZONE-T1"
+      }
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP Status Code phai la 201", function () {
+          pm.response.to.have.status(201);
+      });
+order: 1000

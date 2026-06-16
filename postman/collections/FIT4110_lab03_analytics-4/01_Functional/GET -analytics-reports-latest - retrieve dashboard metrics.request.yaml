@@ -1,0 +1,11 @@
+$kind: http-request
+name: GET /analytics/reports/latest - retrieve dashboard metrics
+url: "{{baseUrl}}/analytics/reports/latest"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP Status Code phai la 200", function () {
+          pm.response.to.have.status(200);
+      });
+order: 2000

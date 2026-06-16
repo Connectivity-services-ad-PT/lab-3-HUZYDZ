@@ -1,0 +1,15 @@
+$kind: http-request
+name: 'GET /analytics/reports/latest - invalid token is rejected'
+method: GET
+url: '{{baseUrl}}/api/v1/reports/daily'
+headers:
+  - key: Authorization
+    value: 'Bearer invalid-token-xyz'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Request khong co token hoac token sai phai bi tu choi 401/403", function () {
+          pm.expect([401, 403]).to.include(pm.response.code);
+      });
+order: 2000

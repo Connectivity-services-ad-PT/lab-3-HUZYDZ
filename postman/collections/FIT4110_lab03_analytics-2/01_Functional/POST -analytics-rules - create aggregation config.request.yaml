@@ -1,0 +1,27 @@
+$kind: http-request
+name: POST /analytics/rules - create aggregation config
+url: "{{baseUrl}}/api/v1/analytics/rules"
+method: POST
+headers:
+  Authorization: Bearer {{authToken}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "teamName": "{{teamName}}",
+      "ruleType": "aggregation",
+      "threshold": 10
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP Status Code phai la 200 hoac 201", function () {
+          pm.expect([200, 201]).to.include(pm.response.code);
+      });
+      pm.test("Response body phai tra ve dung dinh dang JSON", function () {
+          pm.response.to.be.withBody;
+          pm.response.to.be.json;
+      });
+    language: text/javascript
+order: 1000
