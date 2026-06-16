@@ -26,7 +26,7 @@ jobs:
           nohup npx prism mock contracts/iot-ingestion.openapi.yaml -p 4012 > prism-iot.log 2>&1 &
 
       - name: Wait for mock servers
-        run: npx wait-on http://localhost:4010/health http://localhost:4012/health --timeout 30000
+        run: npx wait-on tcp:4010 tcp:4012 --timeout 30000
 
       - name: Run Newman contract tests
         run: npx newman run postman/collections/FIT4110_lab03_analytics.postman_collection.json -e postman/environments/FIT4110_lab03_mock.postman_environment.json -r cli,junit,htmlextra --reporter-junit-export reports/newman-report.xml --reporter-htmlextra-export reports/newman-report.html
